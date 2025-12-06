@@ -20,7 +20,7 @@ function parseMarkdown(container) {
     });
 }
 
-async function loadPage(pageName) {
+async function loadPage(pageName, event = null) {
     // 隱藏所有頁面
     document.querySelectorAll('.page-content').forEach(page => {
         page.classList.add('hidden');
@@ -85,8 +85,8 @@ async function loadPage(pageName) {
     });
 
     // Highlight active button (if event exists, from click; otherwise find by page name)
-    if (window.event && window.event.target) {
-        const clickedBtn = window.event.target.closest('.nav-btn');
+    if (event && event.target) {
+        const clickedBtn = event.target.closest('.nav-btn');
         if (clickedBtn) {
             clickedBtn.classList.add('bg-blue-600', 'text-white');
             clickedBtn.classList.remove('text-gray-300');
