@@ -1,4 +1,5 @@
-from flask import Flask, jsonify, render_template, request
+# -*- coding: utf-8 -*-
+from flask import Flask, jsonify, render_template, request, send_from_directory
 import pandas as pd
 import os
 from analysis.dataloader import load_dataset
@@ -88,7 +89,7 @@ datasets = {
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return send_from_directory(BASE_DIR, "index.html")
 
 # API - 獲取資料集列表
 @app.route('/api/datasets', methods=['GET'])

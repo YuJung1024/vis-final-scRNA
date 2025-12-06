@@ -1,0 +1,145 @@
+<style>
+    .hero-gradient {
+        background: linear-gradient(135deg, rgba(71, 159, 250, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+        border: 1px solid rgba(71, 159, 250, 0.2);
+    }
+
+    .markdown-card {
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .markdown-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(71, 159, 250, 0.1);
+    }
+
+    .markdown-content {
+        color: #E6E6E6;
+        line-height: 1.8;
+        font-size: 20px;
+    }
+
+    .markdown-content h3 {
+        color: #479FFA;
+        font-weight: 600;
+        margin-bottom: 16px;
+        font-size: 26px;
+    }
+
+    .markdown-content ul {
+        margin-left: 30px;
+        margin-top: 12px;
+    }
+
+    .markdown-content li {
+        margin-bottom: 10px;
+        color: #C1C1C1;
+        font-size: 20px;
+    }
+
+    .markdown-content strong {
+        color: #FFFFFF;
+        font-weight: 600;
+    }
+
+    .markdown-content a {
+        color: #479FFA;
+        text-decoration: none;
+        transition: color 0.2s;
+        font-size: 20px;
+    }
+
+    .markdown-content a:hover {
+        color: #6BB4FF;
+        text-decoration: underline;
+    }
+
+    .markdown-content hr {
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin: 24px 0;
+    }
+
+    .card-icon {
+        font-size: 3.5rem;
+        margin-bottom: 12px;
+    }
+</style>
+
+<div class="max-w-7xl mx-auto">
+    <h1 class="font-bold text-white mb-6" style="font-size: 60px;">scRNA 視覺化分析</h1>
+    <div class="hero-gradient p-10 rounded-2xl mb-10">
+        <div class="flex items-center gap-4 mb-4">
+            <span style="font-size: 60px;">🧬</span>
+            <h2 class="font-bold text-white" style="font-size: 48px;">歡迎使用</h2>
+        </div>
+        <p class="text-gray-300" style="font-size: 24px; line-height: 1.6;">組員:吳帛恩、葉子禎、徐鈺蓉。<br>
+            以下是本次專案的<strong class="text-white">研究動機、數據集</strong>及<strong class="text-white">相關研究</strong>摘要。</p>
+    </div>
+
+    <div class="flex flex-col gap-8 py-6">
+        <div class="markdown-card rounded-2xl p-12 transition-all duration-300">
+            <div class="card-icon">📊</div>
+            <h2 class="font-bold text-white mb-8" style="font-size: 48px;">數據集 (GSE161340)</h2>
+            <div class="markdown-content" id="card-content-3"></div>
+        </div>
+
+        <div class="markdown-card rounded-2xl p-12 transition-all duration-300">
+            <div class="card-icon">🎯</div>
+            <h2 class="font-bold text-white mb-8" style="font-size: 48px;">研究動機與預期任務</h2>
+            <div class="markdown-content" id="card-content-1"></div>
+        </div>
+
+        <div class="markdown-card rounded-2xl p-12 transition-all duration-300">
+            <div class="card-icon">📚</div>
+            <h2 class="font-bold text-white mb-8" style="font-size: 48px;">相關研究參考</h2>
+            <div class="markdown-content" id="card-content-2"></div>
+        </div>
+    </div>
+</div>
+
+<script id="markdown-1" type="text/markdown">
+### Cluster / Characterize Distribution
+探索具有相似細胞比例的 **spot 群體**，發現潛在的結構與空間模式。
+
+### 
+
+### Correlate
+分析細胞組成特徵與組織影像區域間的**對應與關聯性**。
+
+* **Discover → Compare → Clusters:** 比較不同群集在基因表現上的差異。
+* **Discover → Correlate → Gene-Cluster Relationships:** 分析特定基因與特定群集的相關性。
+</script>
+
+<script id="markdown-2" type="text/markdown">
+### Bio+MedVis Challenge @ IEEE VIS 2024
+Kleshchevnikov, V., Shmatko, A., Dann, E. et al. *Cell2location maps fine-grained cell types in spatial transcriptomics.* Nat Biotechnol 40, 661–671 (2022). [DOI 連結](https://doi.org/10.1038/s41587-021-01139-4)
+
+### 
+
+### Reference-free cell type deconvolution
+Miller, B.F., Huang, F., Atta, L. et al. *Reference-free cell type deconvolution of multi-cellular pixel-resolution spatially resolved transcriptomics data.* Nat Commun 13, 2339 (2022). [DOI 連結](https://doi.org/10.1038/s41467-022-30033-z)
+</script>
+
+<script id="markdown-3" type="text/markdown">
+### 數據類型與規模 (snRNA-seq / scRNA-seq)
+總計 **8 samples**，分為兩組：**年輕/年老小鼠**（基準線/重覆樣本）及 **年輕/年老小鼠**（處理組：Dasatinib + Quercetin 藥物）。
+
+---
+
+### 主要屬性與分組
+物種：**小鼠** (*Mus musculus*)。組織：**海馬迴** (Hippocampus)。
+
+* **對照組 / 基準線 (Control / Baseline):** 觀察自然老化過程中不同腦細胞類型是否有變化。
+* **實驗組 / 處理組 (Experimental / Treatment):** 驗證清除衰老細胞的治療效果。
+
+---
+
+### 樣本內容 (matrix.mtx)
+包含 **1,544** 個獨立細胞，**27,998** 個獨特基因，總計 **3,214,219** 個非零 (non-zero) 基因計數。
+</script>
+
+<!-- Markdown parsing is handled by main.js -->
