@@ -1,0 +1,186 @@
+<style>
+    .hero-gradient {
+        background: linear-gradient(135deg, rgba(71, 159, 250, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+        border: 1px solid rgba(71, 159, 250, 0.2);
+    }
+
+    .markdown-card {
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .markdown-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(71, 159, 250, 0.1);
+    }
+
+    .markdown-content {
+        color: #E6E6E6;
+        line-height: 1.8;
+        font-size: 20px;
+    }
+
+    .markdown-content h3 {
+        color: #479FFA;
+        font-weight: 600;
+        margin-bottom: 16px;
+        font-size: 26px;
+    }
+
+    .markdown-content ul {
+        margin-left: 30px;
+        margin-top: 12px;
+    }
+
+    .markdown-content li {
+        margin-bottom: 10px;
+        color: #C1C1C1;
+        font-size: 20px;
+    }
+
+    .markdown-content strong {
+        color: #FFFFFF;
+        font-weight: 600;
+    }
+
+    .markdown-content a {
+        color: #479FFA;
+        text-decoration: none;
+        transition: color 0.2s;
+        font-size: 20px;
+    }
+
+    .markdown-content a:hover {
+        color: #6BB4FF;
+        text-decoration: underline;
+    }
+
+    .markdown-content hr {
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin: 24px 0;
+    }
+
+    .card-icon {
+        font-size: 3.5rem;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+</style>
+
+<div class="max-w-7xl mx-auto">
+    <h1 class="font-bold text-white mb-6" style="font-size: 60px;">scRNA Visualization</h1>
+    <div class="hero-gradient p-10 rounded-2xl mb-10">
+        <div class="flex items-center gap-4 mb-4">
+            <span style="font-size: 60px;">🧬</span>
+            <h2 class="font-bold text-white" style="font-size: 48px;">Welcome</h2>
+        </div>
+        <p class="text-gray-300" style="font-size: 24px; line-height: 1.6;">Author: 吳帛恩、葉子禎、徐鈺蓉<br>
+            This project is an interactive visualization web platform designed to present scRNA-seq analysis results
+            from mice across different ages. It allows users to intuitively compare cell population distributions, gene
+            expression changes, and potential biological differences between groups.
+    </div>
+
+    <div class="flex flex-col gap-8 py-6">
+        <div class="markdown-card rounded-2xl p-12 transition-all duration-300">
+            <div class="card-header">
+                <div class="card-icon">📊</div>
+                <h2 class="font-bold text-white" style="font-size: 48px;">Dataset</h2>
+            </div>
+            <div class="markdown-content" id="card-dataset"></div>
+        </div>
+
+        <div class="markdown-card rounded-2xl p-12 transition-all duration-300">
+            <div class="card-header">
+                <div class="card-icon">🎯</div>
+                <h2 class="font-bold text-white" style="font-size: 48px;">Dimensionality Reduction Analysis Page</h2>
+            </div>
+            <div class="markdown-content" id="card-downsampling"></div>
+        </div>
+
+        <div class="markdown-card rounded-2xl p-12 transition-all duration-300">
+            <div class="card-header">
+                <div class="card-icon">📚</div>
+                <h2 class="font-bold text-white" style="font-size: 48px;">Reference</h2>
+            </div>
+            <div class="markdown-content" id="card-reference"></div>
+        </div>
+    </div>
+</div>
+
+<script id="markdown-data" type="text/markdown">
+### Source Dataset: GSE161340
+  - Single Cell and Single Nucleus Droplet Based RNA-sequencing of hippocampus tissue of 4 month and 24 month old mice.
+  - Including 1,544 individual cells, 27,998 unique genes, and a total of 3,214,219 non-zero gene counts. 
+
+---
+### Processing
+  - Data was processed using Scanpy in Python.
+  - Integration performed using SupCPM.
+  - Exported to optimized JSON files for web performance using `export_integration_data.py`.
+</script>
+
+<script id="markdown-downsampling-page" type="text/markdown">
+### 1. Data Visualization (Center Panel)
+- **Scatter Plot**: Displays ~1,500 cells/nuclei in a 2D embedding space.
+- **Methods Supported**:
+  - **SupCPM**: Supervised Capacity Preserving Mapping (Custom integration method).
+  - **UMAP**: Uniform Manifold Approximation and Projection.
+  - **t-SNE**: t-Distributed Stochastic Neighbor Embedding.
+  - **PCA**: Principal Component Analysis.
+- **Interactions**:
+  - **Zoom/Pan**: Use mouse wheel to zoom, click and drag to pan.
+  - **Hover**: View basic cell information (ID, Type, Cluster).
+  - **Click**: Select a specific cell to view detailed statistics.
+
+----
+### 2. Control Panel (Top Left)
+The main control hub for the dashboard:
+- **Embedding Method**: Switch between different dimensionality reduction techniques (SupCPM, UMAP, t-SNE, PCA).
+- **View Mode**:
+  - **Type**: Color cells by sequencing type (scRNA vs. snRNA).
+  - **Cluster**: Color cells by their identified cluster (Leiden clustering).
+- **Gene Expression**:
+  - Dropdown menu to select specific genes.
+  - Coloring changes to a blue gradient representing expression intensity (Low to High).
+  - **Gene Selection Logic**: The available genes include:
+    - **All Variable Genes**: Includes all 2000 highly variable genes (HVGs) identified during the analysis pipeline.
+    - **Top Expressed Genes**: Includes high-expression housekeeping genes.
+    - **Marker Genes**: Includes cell-type specific markers for detailed exploration.
+- **Search**:
+  - **Autocomplete**: Type a Cell ID to see matching suggestions.
+  - **Highlight**: Selecting a cell highlights it in the plot and dims others.
+- **Filter**: Slider to hide low-quality cells based on the minimum number of detected genes.
+
+----
+### 3. Details Panel (Right)
+Appears when a cell is selected:
+- **Metadata**: Shows Cell ID, Gene Count, Mitochondrial Percentage, Type, and Cluster.
+- **Marker Genes Chart**: Displays the expression levels of key marker genes for the selected cell as a bar chart.
+
+---
+### 4. Minimap (Bottom Right)
+- Provides a high-level view of the entire dataset.
+- The blue rectangle indicates the current viewport area.
+- Click or drag on the minimap to navigate quickly.
+
+</script>
+
+<script id="markdown-reference" type="text/markdown">
+### Bio+MedVis Challenge @ IEEE VIS 2024
+Kleshchevnikov, V., Shmatko, A., Dann, E. et al. *Cell2location maps fine-grained cell types in spatial transcriptomics.* Nat Biotechnol 40, 661–671 (2022). [DOI Link](https://doi.org/10.1038/s41587-021-01139-4)
+
+### 
+
+### Reference-free cell type deconvolution
+Miller, B.F., Huang, F., Atta, L. et al. *Reference-free cell type deconvolution of multi-cellular pixel-resolution spatially resolved transcriptomics data.* Nat Commun 13, 2339 (2022). [DOI Link](https://doi.org/10.1038/s41467-022-30033-z)
+</script>
+
+<!-- Markdown parsing is handled by main.js -->

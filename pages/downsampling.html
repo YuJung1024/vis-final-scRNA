@@ -1,0 +1,1020 @@
+<style>
+    /* Container for the visualization */
+    .viz-container {
+        position: relative;
+        width: 100%;
+        height: 85vh;
+        max-height: 900px;
+        min-height: 500px;
+        background-color: #000000;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    @media (max-height: 800px) {
+        .viz-container {
+            height: 75vh;
+        }
+    }
+
+    @media (max-height: 600px) {
+        .viz-container {
+            height: 70vh;
+            min-height: 400px;
+        }
+    }
+
+    #chart {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Tooltip */
+    .tooltip {
+        position: absolute;
+        background: rgba(11, 11, 15, 0.95);
+        backdrop-filter: blur(20px);
+        color: #E6E6E6;
+        padding: 16px 18px;
+        border-radius: 12px;
+        pointer-events: none;
+        font-size: 18px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        display: none;
+        z-index: 999;
+        line-height: 1.7;
+        min-width: 200px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    /* Controls (Top Left) */
+    .viz-controls {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(11, 11, 15, 0.9);
+        backdrop-filter: blur(20px);
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        width: 300px;
+        max-width: calc(100% - 40px);
+        z-index: 100;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        max-height: calc(100% - 40px);
+        overflow-y: auto;
+    }
+
+    @media (max-width: 768px) {
+        .viz-controls {
+            width: 250px;
+            padding: 15px;
+        }
+    }
+
+    .viz-controls h2 {
+        margin: 0 0 16px 0;
+        font-size: 30px;
+        color: #fff;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 12px;
+        font-weight: 600;
+    }
+
+    .control-group {
+        margin-bottom: 15px;
+    }
+
+    .control-label {
+        display: block;
+        font-size: 18px;
+        font-weight: 600;
+        color: #868F97;
+        margin-bottom: 10px;
+    }
+
+    /* Info Panel (Bottom Left) */
+    .info-panel {
+        position: absolute;
+        bottom: 15px;
+        left: 15px;
+        width: 400px;
+        max-width: calc(100% - 30px);
+        max-height: 300px;
+        overflow-y: auto;
+        background: rgba(30, 30, 30, 0.9);
+        padding: 15px;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        z-index: 100;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #ccc;
+        border: 1px solid #333;
+    }
+
+    @media (max-width: 768px) {
+        .info-panel {
+            width: calc(100% - 30px);
+            max-height: 200px;
+            font-size: 11px;
+        }
+    }
+
+    .info-panel h4 {
+        margin: 0 0 5px 0;
+        font-size: 14px;
+        color: #fff;
+        border-bottom: 1px solid #444;
+        padding-bottom: 3px;
+    }
+
+    .info-panel p {
+        margin-bottom: 10px;
+    }
+
+
+    /* Details Panel (Right) */
+    .viz-details-panel {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        bottom: 170px;
+        width: 320px;
+        max-width: calc(100% - 40px);
+        background: rgba(11, 11, 15, 0.95);
+        backdrop-filter: blur(20px);
+        padding: 24px;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        transform: translateX(120%);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 100;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #E6E6E6;
+    }
+
+    @media (max-width: 768px) {
+        .viz-details-panel {
+            width: 280px;
+            padding: 18px;
+        }
+    }
+
+    .viz-details-panel.active {
+        transform: translateX(0);
+    }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+
+    .panel-title {
+        margin: 0;
+        font-size: 26px;
+        color: #fff;
+        word-break: break-all;
+        font-weight: 600;
+    }
+
+    .close-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 18px;
+        cursor: pointer;
+        color: #868F97;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .close-btn:hover {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+
+    .stat-box {
+        background: rgba(255, 255, 255, 0.04);
+        padding: 12px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all 0.2s;
+    }
+
+    .stat-box:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(71, 159, 250, 0.3);
+    }
+
+    .stat-val {
+        display: block;
+        font-size: 26px;
+        font-weight: 700;
+        color: #479FFA;
+    }
+
+    .stat-label {
+        font-size: 16px;
+        color: #868F97;
+        margin-top: 6px;
+    }
+
+    /* UI Components */
+    .mode-btn-group {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+    }
+
+    .viz-mode-btn {
+        flex: 1;
+        padding: 14px 16px;
+        font-size: 17px;
+        cursor: pointer;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 10px;
+        transition: all 0.2s;
+        font-weight: 600;
+        color: #E6E6E6;
+        white-space: nowrap;
+    }
+
+    .viz-mode-btn:hover {
+        background: rgba(71, 159, 250, 0.1);
+        border-color: rgba(71, 159, 250, 0.2);
+    }
+
+    .viz-mode-btn.active {
+        background: rgba(71, 159, 250, 0.2);
+        color: #479FFA;
+        border-color: rgba(71, 159, 250, 0.4);
+    }
+
+    input[type=range] {
+        width: 100%;
+        margin: 8px 0;
+        accent-color: #479FFA;
+        cursor: pointer;
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        box-sizing: border-box;
+        font-size: 18px;
+        background: rgba(255, 255, 255, 0.04);
+        color: #E6E6E6;
+        transition: all 0.2s;
+    }
+
+    .search-box:focus {
+        outline: none;
+        border-color: rgba(71, 159, 250, 0.4);
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .search-box::placeholder {
+        color: #868F97;
+    }
+
+    .range-value {
+        float: right;
+        color: #479FFA;
+        font-weight: 700;
+    }
+
+    .suggestions-list {
+        position: absolute;
+        width: 100%;
+        background: rgba(11, 11, 15, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-top: none;
+        border-radius: 0 0 10px 10px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        display: none;
+    }
+
+    .suggestions-list li {
+        padding: 14px 16px;
+        cursor: pointer;
+        color: #E6E6E6;
+        font-size: 17px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.2s;
+    }
+
+    .suggestions-list li:hover {
+        background: rgba(71, 159, 250, 0.1);
+        color: #479FFA;
+    }
+
+    .suggestions-list li strong {
+        color: #479FFA;
+    }
+
+    .legend-area {
+        font-size: 17px;
+        color: #E6E6E6;
+        background: rgba(255, 255, 255, 0.04);
+        padding: 14px;
+        border-radius: 12px;
+        margin-bottom: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 4px;
+        vertical-align: middle;
+    }
+
+    .node circle {
+        stroke: #000;
+        stroke-width: 0.5px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .node:hover circle,
+    .node.selected circle {
+        stroke: #fff;
+        stroke-width: 2px;
+    }
+
+    .faded {
+        opacity: 0.1 !important;
+    }
+
+    .active-node {
+        opacity: 1 !important;
+    }
+
+    #minimap-container {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        width: 220px;
+        height: 150px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(11, 11, 15, 0.9);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        border-radius: 16px;
+        overflow: hidden;
+        z-index: 90;
+    }
+
+    .minimap-node {
+        fill: #555;
+    }
+
+    .viewport-rect {
+        fill: rgba(71, 159, 250, 0.2);
+        stroke: #479FFA;
+        stroke-width: 2px;
+    }
+
+    #loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(11, 11, 15, 0.95);
+        backdrop-filter: blur(20px);
+        padding: 32px 48px;
+        border-radius: 20px;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+        z-index: 1000;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #E6E6E6;
+    }
+
+    #loading h3 {
+        color: #fff;
+        font-size: 30px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    #loading p {
+        color: #868F97;
+        font-size: 20px;
+    }
+
+    select {
+        background: rgba(255, 255, 255, 0.04);
+        color: #E6E6E6;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    select:focus {
+        outline: none;
+        border-color: rgba(71, 159, 250, 0.4);
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    select option {
+        background: #0B0B0F;
+        color: #E6E6E6;
+    }
+</style>
+
+<div class="viz-container">
+    <div id="loading">
+        <h3>Loading Data...</h3>
+        <p>Please wait while we load 4000+ cells</p>
+    </div>
+
+    <div class="viz-controls">
+        <h2>Integration Analysis</h2>
+
+        <div class="control-group">
+            <label class="control-label">Embedding Method:</label>
+            <div class="mode-btn-group" id="projection-selector">
+                <button class="viz-mode-btn active" onclick="setProjection('supcpm')">SupCPM</button>
+                <button class="viz-mode-btn" onclick="setProjection('umap')">UMAP</button>
+                <button class="viz-mode-btn" onclick="setProjection('tsne')">t-SNE</button>
+                <button class="viz-mode-btn" onclick="setProjection('pca')">PCA</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">View Mode (Color By):</label>
+            <div class="mode-btn-group" id="mode-selector">
+                <button class="viz-mode-btn active" onclick="setMode('type')">Type (sc/sn)</button>
+                <button class="viz-mode-btn" onclick="setMode('cluster')">Cluster</button>
+            </div>
+        </div>
+
+        <div class="control-group"
+            style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 15px; margin-top: 15px;">
+            <label class="control-label">Gene Expression:</label>
+            <select id="gene-selector" style="width:100%;">
+                <option value="">None (Color by Mode)</option>
+            </select>
+            <div id="gene-legend" style="margin-top:14px; display:none;">
+                <div
+                    style="display:flex; justify-content:space-between; font-size:16px; color:#868F97; margin-bottom:6px;">
+                    <span>Low</span>
+                    <span>High</span>
+                </div>
+                <div
+                    style="height:16px; background:linear-gradient(to right, rgba(255,255,255,0.04), #479FFA); border-radius:8px; border: 1px solid rgba(255,255,255,0.08);">
+                </div>
+            </div>
+        </div>
+
+        <div class="legend-area" id="legend"></div>
+
+        <div class="control-group">
+            <label class="control-label">
+                Filter Min Genes: <span id="minGeneVal" class="range-value">0</span>
+            </label>
+            <input type="range" id="minGeneSlider" min="0" max="5000" value="0" step="100">
+        </div>
+
+        <div class="control-group" style="position: relative;">
+            <input type="text" id="search" class="search-box" placeholder="Search Cell ID..." autocomplete="off">
+            <ul id="search-suggestions" class="suggestions-list"></ul>
+            <div id="search-result"
+                style="font-size:11px; color:#e15759; margin-top:3px; height:15px; font-weight:bold;"></div>
+        </div>
+    </div>
+
+    <div class="info-panel" style="display:none;">
+        <h4>About This Visualization</h4>
+        <p>
+            <strong>Data:</strong> Mouse Brain Organoid (GSE161340).<br>
+            Comparison of Single-Cell (scRNA) and Single-Nucleus (snRNA) sequencing data integration.
+        </p>
+        <p>
+            <strong>SupCPM:</strong> Supervised Capacity Preserving Mapping. A novel visualization method that combines
+            unsupervised geometry preservation (like t-SNE) with supervised cluster separation.
+        </p>
+        <p>
+            <strong>How to use:</strong>
+        <ul>
+            <li>Switch methods to compare embeddings.</li>
+            <li>Hover/Click cells for details.</li>
+        </ul>
+        </p>
+    </div>
+
+    <div id="details-panel" class="viz-details-panel">
+        <div class="panel-header">
+            <h3 class="panel-title" id="detail-id">Cell ID</h3>
+            <button class="close-btn" onclick="clearSelection()">×</button>
+        </div>
+
+        <div class="stat-grid">
+            <div class="stat-box">
+                <span class="stat-val" id="detail-genes">0</span>
+                <span class="stat-label">Genes</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-val" id="detail-mito">0%</span>
+                <span class="stat-label">Mito %</span>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px; font-size:13px; line-height: 1.6;">
+            <div><b style="color:#888;">Type:</b> <span id="detail-type"></span></div>
+            <div><b style="color:#888;">Condition:</b> <span id="detail-condition"></span></div>
+            <div><b style="color:#888;">Cluster:</b> <span id="detail-cluster"></span></div>
+        </div>
+
+        <div id="expression-chart" style="margin-top:auto;"></div>
+    </div>
+
+    <div id="chart"></div>
+    <div id="minimap-container"></div>
+    <div class="tooltip" id="tooltip"></div>
+</div>
+
+<script>
+    // Get container dimensions
+    const container = document.querySelector('.viz-container');
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+
+    const COLORS = {
+        scRNA: '#4e79a7',
+        snRNA: '#e15759',
+        unknown: '#ccc'
+    };
+
+    const svg = d3.select("#chart").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .on("click", (event) => {
+            if (event.target.tagName === 'svg') clearSelection();
+        });
+
+    const g = svg.append("g");
+    const nodeGroup = g.append("g").attr("class", "nodes");
+
+    const minimapWidth = 200, minimapHeight = 140;
+    const minimap = d3.select("#minimap-container").append("svg")
+        .attr("width", minimapWidth)
+        .attr("height", minimapHeight);
+    const viewportRect = minimap.append("rect").attr("class", "viewport-rect");
+
+    const zoom = d3.zoom()
+        .scaleExtent([0.1, 8])
+        .on("zoom", (event) => {
+            if (event.sourceEvent && event.sourceEvent.type === "brush") return;
+            g.attr("transform", event.transform);
+            updateViewport(event.transform);
+        });
+    svg.call(zoom);
+
+    const drag = d3.drag()
+        .on("start", () => viewportRect.attr("cursor", "grabbing"))
+        .on("drag", (event) => {
+            const transform = d3.zoomTransform(svg.node());
+            const dx = event.dx * (width / minimapWidth) / transform.k;
+            const dy = event.dy * (height / minimapHeight) / transform.k;
+            zoom.translateBy(svg, -dx, -dy);
+        })
+        .on("end", () => viewportRect.attr("cursor", "grab"));
+
+    viewportRect.call(drag).attr("cursor", "grab");
+
+    minimap.on("click", function (event) {
+        const [mx, my] = d3.pointer(event);
+        const x = xScaleMini.invert(mx);
+        const y = yScaleMini.invert(my);
+
+        svg.transition().duration(750)
+            .call(zoom.transform,
+                d3.zoomIdentity.translate(width / 2, height / 2)
+                    .scale(d3.zoomTransform(svg.node()).k)
+                    .translate(-xScale(x), -yScale(y))
+            );
+    });
+
+    let rawData = [];
+    let clusters = [];
+    let geneExpression = null;
+    let xScale, yScale, xScaleMini, yScaleMini;
+    let currentMode = 'type';
+    let currentGene = null;
+    let currentProjection = 'supcpm';
+    let selectedNodeId = null;
+
+    Promise.all([
+        d3.json("downsampling/data/cells.json"),
+        d3.json("downsampling/data/clusters.json"),
+        d3.json("downsampling/data/gene_expression.json")
+    ]).then(function ([cells, clusterData, geneExpr]) {
+        rawData = cells;
+        clusters = clusterData;
+        geneExpression = geneExpr;
+
+        d3.select("#loading").style("display", "none");
+
+        rawData.forEach(d => {
+            d.random_x = (Math.random() - 0.5) * 20;
+            d.random_y = (Math.random() - 0.5) * 20;
+        });
+
+        updateLegend();
+
+        const maxGenes = d3.max(cells, d => d.n_genes) || 5000;
+        d3.select("#minGeneSlider").attr("max", maxGenes);
+
+        setProjection('supcpm');
+        populateGeneSelector();
+
+        d3.select("#minGeneSlider").on("input", function () {
+            d3.select("#minGeneVal").text(this.value);
+            updateChart();
+        });
+
+        d3.select("#gene-selector").on("change", function () {
+            const gene = this.value;
+            if (gene) {
+                setMode('gene', gene);
+            } else {
+                setMode('type');
+            }
+        });
+
+        d3.select("#search").on("input", function () {
+            const val = this.value.trim().toLowerCase();
+            const nodes = nodeGroup.selectAll(".node");
+            const resultDiv = d3.select("#search-result");
+            const suggestions = d3.select("#search-suggestions");
+
+            if (!selectedNodeId) {
+                nodes.classed("found", false).style("opacity", 1);
+            }
+
+            if (val === "") {
+                resultDiv.text("");
+                suggestions.style("display", "none");
+                return;
+            }
+
+            const matches = rawData.filter(d => d.cell_id.toLowerCase().includes(val)).slice(0, 10);
+            suggestions.html("").style("display", matches.length ? "block" : "none");
+
+            matches.forEach(d => {
+                suggestions.append("li")
+                    .html(d.cell_id.replace(new RegExp(val, "gi"), match => `<strong>${match}</strong>`))
+                    .on("click", () => {
+                        d3.select("#search").property("value", d.cell_id);
+                        suggestions.style("display", "none");
+                        selectNode(d);
+                    });
+            });
+
+            const target = nodes.filter(d => d.cell_id.toLowerCase().includes(val));
+            if (!target.empty()) {
+                if (!selectedNodeId) nodes.style("opacity", 0.05);
+                target.style("opacity", 1).classed("found", true);
+                resultDiv.text(`Found ${target.size()} cells`);
+            } else {
+                resultDiv.text("Not found");
+            }
+        });
+
+        d3.select("body").on("click", (event) => {
+            if (event.target.id !== "search") {
+                d3.select("#search-suggestions").style("display", "none");
+            }
+        });
+
+    }).catch(err => {
+        console.error(err);
+        d3.select("#loading").html("<h3>Error Loading Data</h3><p>Please check console.</p>");
+    });
+
+    function populateGeneSelector() {
+        if (!geneExpression) return;
+        const genes = Object.keys(geneExpression);
+        const selector = d3.select("#gene-selector");
+        genes.forEach(gene => {
+            selector.append("option").attr("value", gene).text(gene);
+        });
+    }
+
+    window.setProjection = function (method) {
+        currentProjection = method;
+        d3.selectAll("#projection-selector .viz-mode-btn").classed("active", false);
+        d3.select(`button[onclick="setProjection('${method}')"]`).classed("active", true);
+        updateScales(method);
+        drawMinimapNodes();
+        updateChart(true);
+    }
+
+    function updateScales(method) {
+        const padding = 50;
+        const xKey = method === 'supcpm' ? 'supcpm_x' : `${method}_x`;
+        const yKey = method === 'supcpm' ? 'supcpm_y' : `${method}_y`;
+
+        const xExtent = d3.extent(rawData, d => d[xKey]);
+        const yExtent = d3.extent(rawData, d => d[yKey]);
+
+        xScale = d3.scaleLinear().domain(xExtent).range([padding, width - padding]);
+        yScale = d3.scaleLinear().domain(yExtent).range([padding, height - padding]);
+
+        xScaleMini = d3.scaleLinear().domain(xExtent).range([0, minimapWidth]);
+        yScaleMini = d3.scaleLinear().domain(yExtent).range([0, minimapHeight]);
+
+        updateViewport(d3.zoomTransform(svg.node()));
+    }
+
+    function updateViewport(transform) {
+        if (!xScale || !yScaleMini) return;
+        const [topLeft, bottomRight] = [transform.invert([0, 0]), transform.invert([width, height])];
+
+        viewportRect
+            .attr("x", xScaleMini(topLeft[0]))
+            .attr("y", yScaleMini(topLeft[1]))
+            .attr("width", Math.max(0, xScaleMini(bottomRight[0]) - xScaleMini(topLeft[0])))
+            .attr("height", Math.max(0, yScaleMini(bottomRight[1]) - yScaleMini(topLeft[1])));
+    }
+
+    function drawMinimapNodes() {
+        minimap.selectAll(".minimap-node").remove();
+
+        const xKey = currentProjection === 'supcpm' ? 'supcpm_x' : `${currentProjection}_x`;
+        const yKey = currentProjection === 'supcpm' ? 'supcpm_y' : `${currentProjection}_y`;
+
+        const step = Math.ceil(rawData.length / 2000);
+        const miniData = rawData.filter((d, i) => i % step === 0);
+
+        minimap.append("g")
+            .selectAll(".minimap-node")
+            .data(miniData)
+            .enter().append("circle")
+            .attr("class", "minimap-node")
+            .attr("cx", d => xScaleMini(d[xKey]))
+            .attr("cy", d => yScaleMini(d[yKey]))
+            .attr("r", 1.5)
+            .attr("fill", d => {
+                const idx = rawData.indexOf(d);
+                return getNodeColor(d, idx);
+            });
+    }
+
+    window.setMode = function (mode, gene = null) {
+        currentMode = mode;
+        currentGene = gene;
+
+        if (mode !== 'gene') {
+            d3.selectAll("#mode-selector .viz-mode-btn").classed("active", false);
+            d3.select(`button[onclick="setMode('${mode}')"]`).classed("active", true);
+            d3.select("#gene-selector").property("value", "");
+            d3.select("#gene-legend").style("display", "none");
+        } else {
+            d3.selectAll("#mode-selector .viz-mode-btn").classed("active", false);
+            d3.select("#gene-legend").style("display", "block");
+        }
+
+        updateLegend();
+
+        nodeGroup.selectAll(".node circle")
+            .transition().duration(300)
+            .attr("fill", function (d) {
+                const idx = rawData.indexOf(d);
+                return getNodeColor(d, idx);
+            });
+
+        drawMinimapNodes();
+    }
+
+    function updateLegend() {
+        const div = d3.select("#legend");
+        let html = "";
+
+        if (currentMode === 'type') {
+            html += `<div><span class="dot" style="background:${COLORS.scRNA}"></span>scRNA</div>`;
+            html += `<div><span class="dot" style="background:${COLORS.snRNA}"></span>snRNA</div>`;
+        } else if (currentMode === 'cluster') {
+            clusters.forEach(c => {
+                html += `<div><span class="dot" style="background:${c.color}"></span>${c.name}</div>`;
+            });
+        } else if (currentMode === 'gene') {
+            html = "<div>Color intensity represents gene expression level</div>";
+        }
+        div.html(html);
+    }
+
+    function getNodeColor(d, i = -1) {
+        if (currentMode === 'type') {
+            if (d.type === 'scRNA') return COLORS.scRNA;
+            if (d.type === 'snRNA') return COLORS.snRNA;
+            return COLORS.unknown;
+        } else if (currentMode === 'cluster') {
+            const c = clusters.find(c => c.id == d.cluster);
+            return c ? c.color : '#ccc';
+        } else if (currentMode === 'gene' && currentGene && geneExpression) {
+            let idx = i;
+            if (idx === -1) idx = rawData.indexOf(d);
+
+            if (idx !== -1) {
+                const val = geneExpression[currentGene][idx];
+                const maxVal = 3.0;
+                return d3.interpolateBlues(val / maxVal);
+            }
+            return '#eee';
+        }
+        return '#ccc';
+    }
+
+    function updateChart(animate = false) {
+        if (!xScale) return;
+
+        const minGenes = +d3.select("#minGeneSlider").property("value");
+        const filteredNodes = rawData.filter(d => d.n_genes >= minGenes);
+
+        const xKey = currentProjection === 'supcpm' ? 'supcpm_x' : `${currentProjection}_x`;
+        const yKey = currentProjection === 'supcpm' ? 'supcpm_y' : `${currentProjection}_y`;
+
+        const nodes = nodeGroup.selectAll(".node")
+            .data(filteredNodes, d => d.cell_id);
+
+        nodes.exit().transition().duration(300).style("opacity", 0).remove();
+
+        const nodesEnter = nodes.enter().append("g")
+            .attr("class", "node")
+            .attr("transform", d => `translate(${xScale(d[xKey])},${yScale(d[yKey])})`)
+            .style("opacity", 0);
+
+        nodesEnter.append("circle")
+            .attr("r", 2.5)
+            .attr("fill", (d, i) => getNodeColor(d, i));
+
+        nodesEnter.transition().duration(500).style("opacity", 1);
+
+        const allNodes = nodes.merge(nodesEnter);
+
+        allNodes.select("circle")
+            .attr("fill", function (d) {
+                const idx = rawData.indexOf(d);
+                return getNodeColor(d, idx);
+            });
+
+        if (animate) {
+            allNodes.transition().duration(1000)
+                .attr("transform", d => `translate(${xScale(d[xKey])},${yScale(d[yKey])})`);
+        } else {
+            allNodes.attr("transform", d => `translate(${xScale(d[xKey])},${yScale(d[yKey])})`);
+        }
+
+        allNodes.on("click", (event, d) => {
+            event.stopPropagation();
+            selectNode(d);
+        });
+
+        allNodes.on("mouseover", function (event, d) {
+            if (selectedNodeId && selectedNodeId !== d.cell_id) return;
+
+            const tooltip = d3.select("#tooltip");
+            let content = `<div style="font-weight:bold; color:#ffcc00">${d.cell_id}</div>`;
+            content += `Type: ${d.type}<br>Cluster: ${d.cluster}`;
+
+            tooltip.style("display", "block").html(content);
+
+            if (!selectedNodeId) {
+                allNodes.style("opacity", 0.1);
+                d3.select(this).style("opacity", 1).select("circle").attr("stroke", "#fff").attr("stroke-width", 2);
+            }
+        })
+            .on("mousemove", (event) => d3.select("#tooltip").style("left", (event.pageX + 15) + "px").style("top", (event.pageY - 15) + "px"))
+            .on("mouseout", function () {
+                d3.select("#tooltip").style("display", "none");
+
+                if (!selectedNodeId) {
+                    allNodes.style("opacity", 1);
+                    d3.select(this).select("circle").attr("stroke", "#000").attr("stroke-width", 0.5);
+                }
+            });
+    }
+
+    function selectNode(d) {
+        selectedNodeId = d.cell_id;
+
+        const allNodes = nodeGroup.selectAll(".node");
+        allNodes.classed("faded", true).classed("active-node", false).style("opacity", 0.1);
+
+        const target = allNodes.filter(n => n.cell_id === d.cell_id);
+        target.classed("faded", false).classed("active-node", true).style("opacity", 1);
+        target.select("circle").attr("stroke", "#fff").attr("stroke-width", 2);
+
+        const panel = d3.select("#details-panel");
+        panel.select("#detail-id").text(d.cell_id);
+        panel.select("#detail-genes").text(d.n_genes);
+        panel.select("#detail-mito").text(d.pct_mito.toFixed(1) + "%");
+        panel.select("#detail-type").text(d.type);
+        panel.select("#detail-condition").text(d.condition);
+        panel.select("#detail-cluster").text(d.cluster);
+
+        updateExpressionChart(d);
+        panel.classed("active", true);
+    }
+
+    function updateExpressionChart(d) {
+        const chartDiv = d3.select("#expression-chart");
+        chartDiv.html("");
+
+        if (!geneExpression) return;
+
+        const index = rawData.indexOf(d);
+        if (index === -1) return;
+
+        const genes = Object.keys(geneExpression);
+        if (genes.length === 0) return;
+
+        chartDiv.append("div")
+            .style("font-weight", "bold")
+            .style("font-size", "12px")
+            .style("margin-bottom", "8px")
+            .style("border-bottom", "1px solid #444")
+            .style("padding-bottom", "4px")
+            .text("Marker Genes");
+
+        genes.forEach(gene => {
+            const val = geneExpression[gene][index];
+            const maxVal = 3.0;
+            const pct = Math.min(100, (val / maxVal) * 100);
+
+            const row = chartDiv.append("div").style("margin-bottom", "6px");
+
+            const labelRow = row.append("div")
+                .style("display", "flex")
+                .style("justify-content", "space-between")
+                .style("font-size", "11px")
+                .style("margin-bottom", "2px");
+
+            labelRow.append("span").text(gene);
+            labelRow.append("span").text(val.toFixed(2));
+
+            const barBg = row.append("div")
+                .style("width", "100%")
+                .style("height", "6px")
+                .style("background", "#333")
+                .style("border-radius", "3px")
+                .style("overflow", "hidden");
+
+            barBg.append("div")
+                .style("width", `${pct}%`)
+                .style("height", "100%")
+                .style("background", "#4e79a7");
+        });
+    }
+
+    window.clearSelection = function () {
+        selectedNodeId = null;
+        d3.select("#details-panel").classed("active", false);
+
+        nodeGroup.selectAll(".node")
+            .classed("faded", false)
+            .classed("active-node", false)
+            .style("opacity", 1)
+            .select("circle").attr("stroke", "#000").attr("stroke-width", 0.5);
+    }
+</script>

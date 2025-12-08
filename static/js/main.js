@@ -4,33 +4,119 @@ function toggleSidebar() {
     sidebar.classList.toggle('hidden');
 }
 
-function loadPage(pageName) {
+// Parse markdown content in a container
+function parseMarkdown(container) {
+    // Find all markdown script tags
+    const markdownScripts = container.querySelectorAll('script[type="text/markdown"]');
+
+    // Explicit mapping: script ID -> card content ID
+    const contentMapping = {
+        'markdown-data': 'card-dataset',
+        'markdown-downsampling-page': 'card-downsampling',
+        'markdown-reference': 'card-reference'
+    };
+
+    markdownScripts.forEach((script) => {
+        const scriptId = script.id;
+        const contentId = contentMapping[scriptId];
+
+        if (contentId) {
+            const contentDiv = container.querySelector(`#${contentId}`);
+            if (contentDiv && script.textContent) {
+                contentDiv.innerHTML = marked.parse(script.textContent);
+            }
+        }
+    });
+}
+
+async function loadPage(pageName, event = null) {
     // 隱藏所有頁面
     document.querySelectorAll('.page-content').forEach(page => {
         page.classList.add('hidden');
     });
 
-    // 顯示選中的頁面
-    document.getElementById(pageName + '-page').classList.remove('hidden');
+    // 取得或創建目標頁面容器
+    let targetPage = document.getElementById(pageName + '-page');
+
+    if (!targetPage) {
+        const mainContent = document.getElementById('main-content');
+        targetPage = document.createElement('div');
+        targetPage.id = pageName + '-page';
+        targetPage.className = 'page-content';
+        mainContent.appendChild(targetPage);
+    }
+
+    // 如果頁面內容為空，載入外部 HTML
+    if (!targetPage.hasAttribute('data-loaded')) {
+        try {
+            const response = await fetch(`pages/${pageName}.html`);
+            if (response.ok) {
+                const html = await response.text();
+                targetPage.innerHTML = html;
+                targetPage.setAttribute('data-loaded', 'true');
+
+                // Execute scripts in loaded HTML
+                const scripts = targetPage.querySelectorAll('script');
+                scripts.forEach(script => {
+                    if (script.type === 'text/markdown') {
+                        // Skip markdown content scripts
+                        return;
+                    }
+                    const newScript = document.createElement('script');
+                    if (script.src) {
+                        newScript.src = script.src;
+                    } else {
+                        newScript.textContent = script.textContent;
+                    }
+                    document.body.appendChild(newScript);
+                });
+
+                // Parse markdown if marked library is available
+                if (typeof marked !== 'undefined') {
+                    parseMarkdown(targetPage);
+                }
+            } else {
+                targetPage.innerHTML = '<div class="bg-red-50 border border-red-200 rounded-lg p-4"><p class="text-red-800">頁面載入失敗</p></div>';
+            }
+        } catch (error) {
+            console.error('Loading Failed:', error);
+            targetPage.innerHTML = '<div class="bg-red-50 border border-red-200 rounded-lg p-4"><p class="text-red-800">頁面載入錯誤</p></div>';
+        }
+    }
+
+    // 顯示頁面
+    targetPage.classList.remove('hidden');
 
     // 更新導航按鈕樣式
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('bg-blue-600', 'text-white');
         btn.classList.add('text-gray-300');
     });
-    event.target.closest('.nav-btn').classList.add('bg-blue-600', 'text-white');
-    event.target.closest('.nav-btn').classList.remove('text-gray-300');
 
-    // 更新頁面標題 
+    // Highlight active button (if event exists, from click; otherwise find by page name)
+    if (event && event.target) {
+        const clickedBtn = event.target.closest('.nav-btn');
+        if (clickedBtn) {
+            clickedBtn.classList.add('bg-blue-600', 'text-white');
+            clickedBtn.classList.remove('text-gray-300');
+        }
+    } else {
+        // Find button by onclick attribute matching pageName
+        const buttons = document.querySelectorAll('.nav-btn');
+        buttons.forEach(btn => {
+            if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(`'${pageName}'`)) {
+                btn.classList.add('bg-blue-600', 'text-white');
+                btn.classList.remove('text-gray-300');
+            }
+        });
+    }
+
+    // 更新頁面標題
     const titles = {
-        'home': '首頁總覽',
-        'normalize': '數據標準化',
-        'umap': 'UMAP 視覺化',
-        'heatmap': '基因表達熱圖',
-        'annotation': '細胞類型註釋',
-        'qc': 'QC 質控報告'
+        'home': 'Overview',
+        'downsampling': 'Dimensionality Reduction Analysis'
     };
-    document.getElementById('page-title').textContent = titles[pageName];
+    document.getElementById('page-title').textContent = titles[pageName] || pageName;
 }
 async function apiRequest(endpoint, method = 'GET', data = null) {
     const options = {
@@ -116,9 +202,16 @@ function showError(elementId, message) {
 window.addEventListener('DOMContentLoaded', () => {
     // 選中首頁按鈕
     document.querySelector('.nav-btn').classList.add('bg-blue-600', 'text-white');
-    
-    // 載入資料集列表
+
+    // 載入首頁
+    loadPage('home');
+
+    // 載入資料集列表 (optional - only works with Flask backend)
     loadDatasets().then(datasets => {
-        console.log('Datasets loaded:', datasets);
+        if (datasets) {
+            console.log('Datasets loaded:', datasets);
+        }
+    }).catch(err => {
+        console.log('API not available (Flask server not running):', err.message);
     });
 });
