@@ -186,6 +186,9 @@ Kleshchevnikov, V., Shmatko, A., Dann, E. et al. *Cell2location maps fine-graine
 ### Reference-free cell type deconvolution
 Miller, B.F., Huang, F., Atta, L. et al. *Reference-free cell type deconvolution of multi-cellular pixel-resolution spatially resolved transcriptomics data.* Nat Commun 13, 2339 (2022). [DOI](https://doi.org/10.1038/s41467-022-30033-z)
 
+### Optimal Dimensionality Selection Using Hull Heatmaps for Single-Cell Analysis
+Jeong, Haejin & Jeong, Hyoung‐oh & Lee, Semin & Jeong, Won-Ki. (2025). Optimal Dimensionality Selection Using Hull Heatmaps for Single‐Cell Analysis. Computer Graphics Forum. 44. 10.1111/cgf.70151. [DOI](https://doi.org/10.1111/cgf.70151)
+
 ## License
 
 This project is created for academic purposes as part of coursework at NCCU.
