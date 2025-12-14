@@ -64,17 +64,36 @@ This project provides an intuitive interface to analyze and compare cell populat
 
 ### Prerequisites
 - Python 3.9 or higher
+- R (for gene expression analysis features)
 - pip package manager
 
 ### Setup
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/uniyeh/vis-final-scRNA.git
 cd vis-final-scRNA
 ```
 
-2. Create and activate a virtual environment (recommended):
+2. **Download the dataset** (~1.1GB compressed, ~1.3GB uncompressed):
+   - Go to [Releases](https://github.com/uniyeh/vis-final-scRNA/releases)
+   - Download `GSE161340.zip` from the latest release
+   - Extract in the project root directory:
+   ```bash
+   unzip GSE161340.zip
+   ```
+
+   This will create the following structure:
+   ```
+   GSE161340/
+   ├── raw/                    # Original GEO dataset files
+   ├── processed/
+   │   ├── gene_expression/   # Gene expression CSVs
+   │   └── rds/               # R data files (417MB)
+   └── cache/                 # Cached analysis results
+   ```
+
+3. Create and activate a virtual environment (recommended):
 ```bash
 python -m venv venv
 source venv/bin/activate  # On macOS/Linux
@@ -82,7 +101,7 @@ source venv/bin/activate  # On macOS/Linux
 venv\Scripts\activate  # On Windows
 ```
 
-3. Install dependencies:
+4. Install Python dependencies:
 ```bash
 pip install -r requirememt.txt
 ```
@@ -94,23 +113,39 @@ Required packages:
 - scanpy==1.11.5
 - anndata==0.12.6
 
+5. Install R packages (for gene expression analysis):
+```r
+install.packages("Seurat")
+```
+
 ## Usage
 
 ### Running the Application
 
-1. Start the Flask server:
+**Option 1: Using app.py (Recommended for API features)**
 ```bash
 python app.py
 ```
+Then open: http://localhost:5001
 
-2. Open your web browser and navigate to:
+**Option 2: Using server.py (For gene expression analysis with R)**
+```bash
+python server.py
 ```
-http://localhost:5001
-```
+Then open: http://localhost:8000
 
-3. The application will launch with the overview page. Use the sidebar to navigate between:
-   - **Overview:** Project information and dataset details
-   - **DR Analysis:** Interactive dimensionality reduction visualization
+**Option 3: Simple HTTP server**
+```bash
+python -m http.server 8000
+```
+Then open: http://localhost:8000
+
+### Application Features
+
+The application provides three main sections:
+- **Overview:** Project information and dataset details
+- **Dimensionality Reduction Analysis:** Interactive visualization with multiple DR methods
+- **Gene Feature Analysis:** Gene expression analysis with R integration (requires server.py)
 
 ### Navigation Guide
 
