@@ -6,7 +6,7 @@ from analysis.dataloader import load_dataset
 
 # 設定路徑
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATASET_ROOT = os.path.join(BASE_DIR, "data")
+DATASET_ROOT = os.path.join(BASE_DIR, "GSE161340", "raw")
 app = Flask(__name__)
 # app = Flask(__name__, static_folder=BASE_DIR, static_url_path="/static")
 
@@ -101,10 +101,10 @@ def serve_pages(filename):
 def serve_downsampling(filename):
     return send_from_directory(os.path.join(BASE_DIR, 'downsampling'), filename)
 
-# 提供 data2 目錄中的檔案
+# 提供 gene expression 資料
 @app.route('/data2/<path:filename>')
 def serve_data2(filename):
-    return send_from_directory(os.path.join(BASE_DIR, 'data2'), filename)
+    return send_from_directory(os.path.join(BASE_DIR, 'GSE161340', 'processed', 'gene_expression'), filename)
 
 # API - 獲取資料集列表
 @app.route('/api/datasets', methods=['GET'])

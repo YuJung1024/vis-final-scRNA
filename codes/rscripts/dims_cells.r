@@ -55,7 +55,7 @@ gene_names2 <- c()
 final_genes <- ""
 first <- TRUE
 
-folder <- paste0("../data2/", rds_name_only, "_", start_dim, "_", end_dim)
+folder <- paste0("../../GSE161340/processed/gene_expression/", rds_name_only, "_", start_dim, "_", end_dim)
 
 
 dimension_path = paste0(folder, "/dimensions.csv")
@@ -81,7 +81,7 @@ if(!file.exists(dimension_path))
   
   
   
-  file_add <- paste0("rds/", rds_name)
+  file_add <- paste0("../../GSE161340/processed/rds/", rds_name)
   pbmc <- readRDS(file_add)
   
   pca_tf = "pca" %in% names(pbmc)
@@ -191,7 +191,7 @@ if(!file.exists(dimension_path))
   if (file.exists(pbmc_path)) {
     pbmc <- readRDS(pbmc_path)
   } else {
-    file_add <- paste0("rds/", rds_name)
+    file_add <- paste0("../../GSE161340/processed/rds/", rds_name)
     pbmc <- readRDS(file_add)
   }
   

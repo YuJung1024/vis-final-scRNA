@@ -48,10 +48,9 @@ Thumbs.db
 *.sqlite3
 
 # Large data files
-data2/
 GSE161340/
-cache/
-*.rds
+GSE161340.zip
 *.h5ad
 *.mtx
 *.mtx.gz
+*.bak

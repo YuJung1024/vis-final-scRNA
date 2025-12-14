@@ -291,7 +291,7 @@ def load_dimensions(rds_name: str, fd: int, ld: int, nrow: int, n_dims: int):
     else:
         rds_base = rds_name
 
-    folder = os.path.join("data2", f"{rds_base}_{fd}_{ld}")
+    folder = os.path.join("GSE161340", "processed", "gene_expression", f"{rds_base}_{fd}_{ld}")
     dim_path = os.path.join(folder, "dimensions.csv")
 
     if not os.path.exists(dim_path):

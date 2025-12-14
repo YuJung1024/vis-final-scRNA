@@ -64,17 +64,36 @@ This project provides an intuitive interface to analyze and compare cell populat
 
 ### Prerequisites
 - Python 3.9 or higher
+- R (for gene expression analysis features)
 - pip package manager
 
 ### Setup
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/uniyeh/vis-final-scRNA.git
 cd vis-final-scRNA
 ```
 
-2. Create and activate a virtual environment (recommended):
+2. **Download the dataset** (~1.1GB compressed, ~1.3GB uncompressed):
+   - Go to [Releases](https://github.com/uniyeh/vis-final-scRNA/releases)
+   - Download `GSE161340.zip` from the latest release
+   - Extract in the project root directory:
+   ```bash
+   unzip GSE161340.zip
+   ```
+
+   This will create the following structure:
+   ```
+   GSE161340/
+   ├── raw/                    # Original GEO dataset files
+   ├── processed/
+   │   ├── gene_expression/   # Gene expression CSVs
+   │   └── rds/               # R data files (417MB)
+   └── cache/                 # Cached analysis results
+   ```
+
+3. Create and activate a virtual environment (recommended):
 ```bash
 python -m venv venv
 source venv/bin/activate  # On macOS/Linux
@@ -82,9 +101,9 @@ source venv/bin/activate  # On macOS/Linux
 venv\Scripts\activate  # On Windows
 ```
 
-3. Install dependencies:
+4. Install Python dependencies:
 ```bash
-pip install -r requirememt.txt
+pip install -r requirements.txt
 ```
 
 Required packages:
@@ -94,23 +113,42 @@ Required packages:
 - scanpy==1.11.5
 - anndata==0.12.6
 
+5. Install R packages (for gene expression analysis):
+```r
+install.packages("Seurat")
+```
+
 ## Usage
 
 ### Running the Application
 
-1. Start the Flask server:
+**Option 1: Using app.py (Recommended)**
 ```bash
 python app.py
 ```
+Then open: http://localhost:5001
 
-2. Open your web browser and navigate to:
-```
-http://localhost:5001
-```
+This provides:
+- Full application features
+- API endpoints for dataset loading
+- Proper routing for all resources
 
-3. The application will launch with the overview page. Use the sidebar to navigate between:
-   - **Overview:** Project information and dataset details
-   - **DR Analysis:** Interactive dimensionality reduction visualization
+**Option 2: Using server.py (For R-based gene expression analysis)**
+```bash
+python server.py
+```
+Then open: http://localhost:8000
+
+This provides:
+- R script integration for gene expression analysis
+- Real-time gene feature computation
+
+### Application Features
+
+The application provides three main sections:
+- **Overview:** Project information and dataset details
+- **Dimensionality Reduction Analysis:** Interactive visualization with multiple DR methods
+- **Gene Feature Analysis:** Gene expression analysis with R integration (requires server.py)
 
 ### Navigation Guide
 
@@ -140,20 +178,28 @@ http://localhost:5001
 ```
 vis-final-scRNA/
 ├── app.py                 # Flask application and API endpoints
+├── server.py              # Flask server with R integration
 ├── index.html             # Main application entry point
-├── requirememt.txt        # Python dependencies
+├── requirements.txt       # Python dependencies
 ├── pages/
 │   ├── home.html          # Overview page
-│   └── downsampling.html  # DR analysis page
+│   ├── downsampling.html  # DR analysis page
+│   └── analysis.html      # Gene feature analysis page
 ├── static/
 │   └── js/
 │       └── main.js        # Client-side JavaScript
+├── codes/
+│   ├── rscripts/          # R scripts for analysis
+│   ├── density_cluster.py # Clustering algorithms
+│   └── ...                # Other analysis scripts
 ├── downsampling/
 │   └── data/              # Preprocessed visualization data (JSON)
 ├── analysis/
 │   └── dataloader.py      # Data loading utilities
-├── GSE161340/             # Raw dataset files
-└── cache/                 # Cached analysis results
+└── GSE161340/             # Dataset (download from releases)
+    ├── raw/               # Original GEO dataset files
+    ├── processed/         # Processed data and gene expressions
+    └── cache/             # Cached analysis results
 ```
 
 ## Technologies Used

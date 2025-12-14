@@ -3,7 +3,7 @@ rds_name <- rawToChar(binpost)
 
 
 	
-file_add <- paste0("rds/", rds_name)
+file_add <- paste0("../../GSE161340/processed/rds/", rds_name)
 
 
 

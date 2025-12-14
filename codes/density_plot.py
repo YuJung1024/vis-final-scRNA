@@ -57,7 +57,7 @@ for i in range(cell_num):
 
 
 
-dim_path = 'data2/' + rds_name_only + '_' + str(fd) + '_' + str(ld) + '/dimensions.csv'
+dim_path = 'GSE161340/processed/gene_expression/' + rds_name_only + '_' + str(fd) + '_' + str(ld) + '/dimensions.csv'
 
 
 f = open(dim_path, 'r', encoding='utf-8')
