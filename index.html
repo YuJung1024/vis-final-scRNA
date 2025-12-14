@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>scRNA-seq 分析平台</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧬%3C/text%3E%3C/svg%3E">
+    <title>scRNA-seq Visualization </title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧬%3C/text%3E%3C/svg%3E">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -127,7 +128,9 @@
                 <h1 class="nav-title">scRNA Visualization</h1>
                 <div class="flex items-center gap-4">
                     <span onclick="loadPage('home', event)" class="nav-link active">Overview</span>
-                    <span onclick="loadPage('downsampling', event)" class="nav-link">Dimensionality Reduction Analysis</span>
+                    <span onclick="loadPage('downsampling', event)" class="nav-link">Dimensionality Reduction
+                        Analysis</span>
+                    <span onclick="loadPage('analysis_wrapper', event)" class="nav-link">Gene Feature Analysis</span>
                 </div>
             </div>
         </nav>

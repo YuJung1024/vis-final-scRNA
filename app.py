@@ -101,6 +101,11 @@ def serve_pages(filename):
 def serve_downsampling(filename):
     return send_from_directory(os.path.join(BASE_DIR, 'downsampling'), filename)
 
+# 提供 data2 目錄中的檔案
+@app.route('/data2/<path:filename>')
+def serve_data2(filename):
+    return send_from_directory(os.path.join(BASE_DIR, 'data2'), filename)
+
 # API - 獲取資料集列表
 @app.route('/api/datasets', methods=['GET'])
 def get_datasets():
