@@ -1,8 +1,4 @@
-// 切換側邊欄顯示/隱藏
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('hidden');
-}
+// Sidebar removed - no longer needed
 
 // Parse markdown content in a container
 function parseMarkdown(container) {
@@ -87,36 +83,26 @@ async function loadPage(pageName, event = null) {
     // 顯示頁面
     targetPage.classList.remove('hidden');
 
-    // 更新導航按鈕樣式
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-600', 'text-white');
-        btn.classList.add('text-gray-300');
+    // 更新導航連結樣式
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
     });
 
-    // Highlight active button (if event exists, from click; otherwise find by page name)
+    // Highlight active link (if event exists, from click; otherwise find by page name)
     if (event && event.target) {
-        const clickedBtn = event.target.closest('.nav-btn');
-        if (clickedBtn) {
-            clickedBtn.classList.add('bg-blue-600', 'text-white');
-            clickedBtn.classList.remove('text-gray-300');
+        const clickedLink = event.target.closest('.nav-link');
+        if (clickedLink) {
+            clickedLink.classList.add('active');
         }
     } else {
-        // Find button by onclick attribute matching pageName
-        const buttons = document.querySelectorAll('.nav-btn');
-        buttons.forEach(btn => {
-            if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(`'${pageName}'`)) {
-                btn.classList.add('bg-blue-600', 'text-white');
-                btn.classList.remove('text-gray-300');
+        // Find link by onclick attribute matching pageName
+        const links = document.querySelectorAll('.nav-link');
+        links.forEach(link => {
+            if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(`'${pageName}'`)) {
+                link.classList.add('active');
             }
         });
     }
-
-    // 更新頁面標題
-    const titles = {
-        'home': 'Overview',
-        'downsampling': 'Dimensionality Reduction Analysis'
-    };
-    document.getElementById('page-title').textContent = titles[pageName] || pageName;
 }
 async function apiRequest(endpoint, method = 'GET', data = null) {
     const options = {
@@ -200,9 +186,6 @@ function showError(elementId, message) {
 
 // 初始化
 window.addEventListener('DOMContentLoaded', () => {
-    // 選中首頁按鈕
-    document.querySelector('.nav-btn').classList.add('bg-blue-600', 'text-white');
-
     // 載入首頁
     loadPage('home');
 

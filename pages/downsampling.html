@@ -437,6 +437,86 @@
         font-size: 20px;
     }
 
+    /* Literature Panel (Bottom) */
+    .literature-panel {
+        position: absolute;
+        bottom: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60%;
+        height: 160px;
+        background: rgba(30, 30, 30, 0.95);
+        padding: 15px;
+        border-radius: 4px;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+        z-index: 95;
+        /* Below controls/details but above map */
+        border: 1px solid #444;
+        color: #ccc;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .literature-panel.active {
+        display: flex;
+    }
+
+    .lit-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #444;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+    }
+
+    .lit-title {
+        font-size: 14px;
+        font-weight: bold;
+        color: #fff;
+    }
+
+    .lit-content {
+        overflow-y: auto;
+        flex: 1;
+        font-size: 12px;
+    }
+
+    .paper-item {
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #333;
+    }
+
+    .paper-item:last-child {
+        border-bottom: none;
+    }
+
+    .paper-link {
+        color: #4e79a7;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .paper-link:hover {
+        text-decoration: underline;
+        color: #6baed6;
+    }
+
+    .paper-authors {
+        color: #888;
+        font-size: 11px;
+        margin-top: 2px;
+    }
+
+    /* Loading Spinner for Panel */
+    .panel-loader {
+        text-align: center;
+        color: #888;
+        margin-top: 20px;
+    }
+
     select {
         background: rgba(255, 255, 255, 0.04);
         color: #E6E6E6;
@@ -540,6 +620,17 @@
         </ul>
         </p>
     </div>
+    <!-- Gene Expression Panel Removed (Integrated into Controls) -->
+
+    <div id="literature-panel" class="literature-panel">
+        <div class="lit-header">
+            <span class="lit-title">Related Literature (Top Genes)</span>
+            <button class="close-btn" onclick="closeLiterature()">×</button>
+        </div>
+        <div id="lit-content" class="lit-content">
+            <div class="panel-loader">Hover over a cell to see related papers...</div>
+        </div>
+    </div>
 
     <div id="details-panel" class="viz-details-panel">
         <div class="panel-header">
@@ -642,6 +733,7 @@
     let currentGene = null;
     let currentProjection = 'supcpm';
     let selectedNodeId = null;
+    let hoverTimeout = null; // For debouncing PubMed API calls
 
     Promise.all([
         d3.json("downsampling/data/cells.json"),
@@ -923,16 +1015,115 @@
                 allNodes.style("opacity", 0.1);
                 d3.select(this).style("opacity", 1).select("circle").attr("stroke", "#fff").attr("stroke-width", 2);
             }
+
+            // Trigger PubMed Fetch (Debounced)
+            clearTimeout(hoverTimeout);
+            hoverTimeout = setTimeout(() => {
+                fetchLiterature(d);
+            }, 800); // 800ms delay to avoid spamming
         })
             .on("mousemove", (event) => d3.select("#tooltip").style("left", (event.pageX + 15) + "px").style("top", (event.pageY - 15) + "px"))
             .on("mouseout", function () {
                 d3.select("#tooltip").style("display", "none");
-
+                // Cancel pending fetch if mouse leaves quickly
+                clearTimeout(hoverTimeout);
                 if (!selectedNodeId) {
                     allNodes.style("opacity", 1);
                     d3.select(this).select("circle").attr("stroke", "#000").attr("stroke-width", 0.5);
                 }
             });
+    }
+
+    function closeLiterature() {
+        d3.select("#literature-panel").classed("active", false);
+        clearTimeout(hoverTimeout);
+    }
+
+    // --- PubMed Integration ---
+
+    async function fetchLiterature(d) {
+        if (!geneExpression) return;
+
+        // Show panel and loading state
+        const panel = d3.select("#literature-panel");
+        const contentDiv = d3.select("#lit-content");
+        const titleSpan = d3.select(".lit-title");
+
+        panel.classed("active", true);
+        contentDiv.html('<div class="panel-loader">Finding top genes and fetching papers...</div>');
+
+        // 1. Find Top 5 Expressed Genes for this cell
+        const idx = rawData.indexOf(d);
+        if (idx === -1) return;
+
+        // Create an array of {gene, value} and sort
+        // Note: Iterating 2000 keys is fast enough in modern JS
+        const geneList = [];
+        for (const [gene, values] of Object.entries(geneExpression)) {
+            if (values[idx] > 0) { // Only consider expressed genes
+                geneList.push({ gene, val: values[idx] });
+            }
+        }
+
+        // Sort descending
+        geneList.sort((a, b) => b.val - a.val);
+        const topGenes = geneList.slice(0, 5).map(x => x.gene);
+
+        if (topGenes.length === 0) {
+            contentDiv.html('<div class="panel-loader">No highly expressed genes found for this cell.</div>');
+            return;
+        }
+
+        titleSpan.text(`Literature for ${d.cell_id} (Top Genes: ${topGenes.join(', ')})`);
+
+        // 2. Query PubMed
+        // Query: (Gene1 OR Gene2 ...) AND (Brain OR Organoid)
+        const geneQuery = topGenes.map(g => `${g}[Title/Abstract]`).join(" OR ");
+        const term = `(${geneQuery}) AND (brain OR organoid OR neuron)`;
+        const encodedTerm = encodeURIComponent(term);
+
+        const baseUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils";
+
+        try {
+            // Step A: ESearch to get IDs
+            const searchRes = await fetch(`${baseUrl}/esearch.fcgi?db=pubmed&term=${encodedTerm}&retmode=json&retmax=5&sort=relevance`);
+            const searchData = await searchRes.json();
+
+            const ids = searchData.esearchresult.idlist;
+
+            if (!ids || ids.length === 0) {
+                contentDiv.html('<div class="panel-loader">No specific papers found for these genes in this context.</div>');
+                return;
+            }
+
+            // Step B: ESummary to get titles
+            const summaryRes = await fetch(`${baseUrl}/esummary.fcgi?db=pubmed&id=${ids.join(',')}&retmode=json`);
+            const summaryData = await summaryRes.json();
+            const papers = summaryData.result; // Object keyed by ID
+
+            // Render
+            let html = "";
+            ids.forEach(id => {
+                if (papers[id]) { // Check if ID exists in result (sometimes 'uids' list has duplicates or errors)
+                    const p = papers[id];
+                    // Clean authors list
+                    const authors = p.authors ? p.authors.map(a => a.name).slice(0, 3).join(", ") + (p.authors.length > 3 ? " et al." : "") : "Unknown Authors";
+
+                    html += `
+                        <div class="paper-item">
+                            <a href="https://pubmed.ncbi.nlm.nih.gov/${id}/" target="_blank" class="paper-link">${p.title}</a>
+                            <div class="paper-authors">${authors} | ${p.pubdate} | ${p.source}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            contentDiv.html(html);
+
+        } catch (err) {
+            console.error("PubMed API Error:", err);
+            contentDiv.html('<div class="panel-loader" style="color:#e15759">Error fetching from PubMed. (Check console or network)</div>');
+        }
     }
 
     function selectNode(d) {
@@ -955,6 +1146,9 @@
 
         updateExpressionChart(d);
         panel.classed("active", true);
+
+        // Fetch literature for the selected cell
+        fetchLiterature(d);
     }
 
     function updateExpressionChart(d) {
@@ -1010,7 +1204,8 @@
     window.clearSelection = function () {
         selectedNodeId = null;
         d3.select("#details-panel").classed("active", false);
-
+        // Also close literature panel to clean up
+        closeLiterature();
         nodeGroup.selectAll(".node")
             .classed("faded", false)
             .classed("active-node", false)

@@ -1,0 +1,26 @@
+{
+    "id": "77112D1B",
+    "path": "~/Downloads/1141_course/Visualization/vis-final-scRNA/DESC/codes/rscripts/dims_cells.r",
+    "project_path": "dims_cells.r",
+    "type": "r_source",
+    "hash": "1012015974",
+    "contents": "",
+    "dirty": false,
+    "created": 1765158673551.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "324,10",
+        "scrollLine": "310"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1765160458,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1765160458580,
+    "read_only": false,
+    "read_only_alternatives": []
+}
